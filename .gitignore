@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+.env
+*.pt
+*.pth
+*.ckpt
+*.npy
+*.wav
+wandb/
+outputs/
+checkpoints/
+data/
