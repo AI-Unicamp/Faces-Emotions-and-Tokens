@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Furhat Evaluation</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap');
+
+  :root {
+    --bg: #0f1117;
+    --surface: #1a1d27;
+    --surface-hover: #222632;
+    --border: #2a2e3a;
+    --text: #e4e6ed;
+    --text-dim: #8b8fa3;
+    --accent: #6c8cff;
+    --accent-glow: rgba(108, 140, 255, 0.15);
+    --radius: 12px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .container {
+    width: 100%;
+    max-width: 540px;
+    padding: 24px;
+  }
+
+  /* -- Screens -- */
+  .screen { display: none; }
+  .screen.active { display: block; }
+
+  /* -- Welcome -- */
+  .welcome h1 {
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin-bottom: 12px;
+  }
+  .welcome p {
+    color: var(--text-dim);
+    line-height: 1.6;
+    margin-bottom: 8px;
+  }
+  .welcome .instructions {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    margin: 24px 0;
+  }
+  .welcome .instructions li {
+    color: var(--text-dim);
+    margin-bottom: 8px;
+    padding-left: 4px;
+    list-style: none;
+    counter-increment: step;
+  }
+  .welcome .instructions li::before {
+    content: counter(step);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--accent-glow);
+    color: var(--accent);
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-right: 10px;
+  }
+  .welcome .instructions ol { counter-reset: step; }
+
+  /* -- Buttons -- */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 14px 32px;
+    border: none;
+    border-radius: var(--radius);
+    font-family: inherit;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+  .btn-primary {
+    background: var(--accent);
+    color: #fff;
+    width: 100%;
+  }
+  .btn-primary:hover:not(:disabled) {
+    filter: brightness(1.1);
+    box-shadow: 0 0 24px var(--accent-glow);
+  }
+
+  /* -- Trial -- */
+  .trial-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 32px;
+  }
+  .trial-counter {
+    font-size: 0.85rem;
+    color: var(--text-dim);
+  }
+  .progress-bar {
+    width: 100%;
+    height: 4px;
+    background: var(--surface);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-bottom: 32px;
+  }
+  .progress-bar .fill {
+    height: 100%;
+    background: var(--accent);
+    transition: width 0.4s ease;
+  }
+
+  .play-area {
+    text-align: center;
+    padding: 40px 0;
+  }
+  .play-btn {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    border: 2px solid var(--accent);
+    background: var(--accent-glow);
+    color: var(--accent);
+    font-size: 1.8rem;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .play-btn:hover:not(:disabled) {
+    background: var(--accent);
+    color: #fff;
+    box-shadow: 0 0 32px var(--accent-glow);
+  }
+  .play-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+  }
+  .play-btn.playing {
+    animation: pulse 1s ease-in-out infinite;
+    background: var(--accent);
+    color: #fff;
+  }
+  @keyframes pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(108, 140, 255, 0.4); }
+    50% { box-shadow: 0 0 0 16px rgba(108, 140, 255, 0); }
+  }
+  .play-label {
+    margin-top: 12px;
+    font-size: 0.85rem;
+    color: var(--text-dim);
+  }
+
+  .question {
+    text-align: center;
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 20px;
+  }
+
+  .options {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  .option-btn {
+    padding: 18px 16px;
+    border: 2px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    color: var(--text);
+    font-family: inherit;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .option-btn:hover:not(:disabled) {
+    border-color: var(--accent);
+    background: var(--accent-glow);
+  }
+  .option-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+  .option-btn.selected {
+    border-color: var(--accent);
+    background: var(--accent-glow);
+    color: var(--accent);
+  }
+
+  /* -- Done -- */
+  .done {
+    text-align: center;
+  }
+  .done h1 {
+    font-size: 1.6rem;
+    margin-bottom: 12px;
+  }
+  .done .score {
+    font-size: 3rem;
+    font-weight: 700;
+    color: var(--accent);
+    margin: 24px 0;
+  }
+  .done p {
+    color: var(--text-dim);
+    line-height: 1.6;
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- WELCOME SCREEN -->
+  <div id="screen-welcome" class="screen active welcome">
+    <h1>Furhat Evaluation</h1>
+    <p>Facial animation intelligibility test</p>
+    <div class="instructions">
+      <ol>
+        <li>Press <strong>Play</strong> to see and hear the Furhat robot</li>
+        <li>Watch the robot's face carefully</li>
+        <li>Select what you think the Furhat said</li>
+        <li>Each sample plays only once</li>
+      </ol>
+    </div>
+    <p style="font-size:0.85rem">You will evaluate <strong id="total-display">—</strong> samples.</p>
+    <br>
+    <button class="btn btn-primary" onclick="startSession()">Begin Evaluation</button>
+  </div>
+
+  <!-- TRIAL SCREEN -->
+  <div id="screen-trial" class="screen">
+    <div class="trial-header">
+      <span class="trial-counter">Trial <span id="trial-num">1</span> / <span id="trial-total">24</span></span>
+    </div>
+    <div class="progress-bar"><div class="fill" id="progress-fill"></div></div>
+
+    <div class="play-area">
+      <button class="play-btn" id="play-btn" onclick="playTrial()">▶</button>
+      <div class="play-label" id="play-label">Press to play</div>
+    </div>
+
+    <div class="question" id="question-text" style="display:none">What did the Furhat say?</div>
+
+    <div class="options" id="options-area" style="display:none">
+      <button class="option-btn" data-syllable="ABA" onclick="selectOption(this)">Furhat said ABA</button>
+      <button class="option-btn" data-syllable="ACHA" onclick="selectOption(this)">Furhat said ACHA</button>
+      <button class="option-btn" data-syllable="ADA" onclick="selectOption(this)">Furhat said ADA</button>
+      <button class="option-btn" data-syllable="AFA" onclick="selectOption(this)">Furhat said AFA</button>
+    </div>
+
+    <button class="btn btn-primary" id="next-btn" style="display:none" onclick="nextTrial()">Next Trial</button>
+  </div>
+
+  <!-- DONE SCREEN -->
+  <div id="screen-done" class="screen done">
+    <h1>Evaluation Complete</h1>
+    <br>
+    <p>Thank you for participating!<br>You may close this page.</p>
+  </div>
+
+</div>
+
+<script>
+  let totalTrials = 0;
+  let hasPlayed = false;
+  let playStartedAt = 0;
+  const PLAYBACK_DURATION_MS = 2500; // generous buffer for < 2s samples
+
+  function showScreen(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById('screen-' + id).classList.add('active');
+  }
+
+  async function startSession() {
+    const res = await fetch('/api/start', { method: 'POST' });
+    const data = await res.json();
+    totalTrials = data.total_trials;
+    document.getElementById('trial-total').textContent = totalTrials;
+    document.getElementById('total-display').textContent = totalTrials;
+    showScreen('trial');
+    resetTrial(1);
+  }
+
+  function resetTrial(num) {
+    hasPlayed = false;
+    document.getElementById('trial-num').textContent = num;
+    document.getElementById('progress-fill').style.width = ((num - 1) / totalTrials * 100) + '%';
+    document.getElementById('play-btn').disabled = false;
+    document.getElementById('play-btn').classList.remove('playing');
+    document.getElementById('play-label').textContent = 'Press to play';
+    document.getElementById('question-text').style.display = 'none';
+    document.getElementById('options-area').style.display = 'none';
+    document.getElementById('next-btn').style.display = 'none';
+
+    document.querySelectorAll('.option-btn').forEach(btn => {
+      btn.disabled = true;
+      btn.classList.remove('selected');
+    });
+  }
+
+  async function playTrial() {
+    if (hasPlayed) return;
+    hasPlayed = true;
+
+    const playBtn = document.getElementById('play-btn');
+    playBtn.disabled = true;
+    playBtn.classList.add('playing');
+    document.getElementById('play-label').textContent = 'Playing…';
+
+    const res = await fetch('/api/play', { method: 'POST' });
+    const data = await res.json();
+
+    if (data.error) {
+      alert('Error: ' + data.error);
+      hasPlayed = false;
+      playBtn.disabled = false;
+      playBtn.classList.remove('playing');
+      return;
+    }
+
+    playStartedAt = Date.now();
+
+    // Wait for playback to finish, then enable options
+    setTimeout(() => {
+      playBtn.classList.remove('playing');
+      document.getElementById('play-label').textContent = 'Played';
+      document.getElementById('question-text').style.display = 'block';
+      document.getElementById('options-area').style.display = 'grid';
+      document.querySelectorAll('.option-btn').forEach(btn => btn.disabled = false);
+    }, PLAYBACK_DURATION_MS);
+  }
+
+  async function selectOption(btn) {
+    // Disable all options immediately
+    document.querySelectorAll('.option-btn').forEach(b => b.disabled = true);
+    btn.classList.add('selected');
+
+    const syllable = btn.dataset.syllable;
+    const reactionTime = Date.now() - playStartedAt;
+
+    const res = await fetch('/api/respond', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ response: syllable, reaction_time_ms: reactionTime }),
+    });
+    const data = await res.json();
+
+    if (data.done) {
+      setTimeout(() => { showScreen('done'); }, 800);
+    } else {
+      document.getElementById('next-btn').style.display = 'block';
+    }
+  }
+
+  function nextTrial() {
+    const current = parseInt(document.getElementById('trial-num').textContent);
+    resetTrial(current + 1);
+  }
+</script>
+
+</body>
+</html>
