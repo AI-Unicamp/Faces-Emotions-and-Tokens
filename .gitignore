@@ -6,7 +6,8 @@ __pycache__/
 *.ckpt
 *.npy
 *.wav
-wandb/
+*.npz
+*.npy
 outputs/
 checkpoints/
 data/
